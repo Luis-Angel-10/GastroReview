@@ -35,7 +35,8 @@ public class SecurityConfig {
                                 "/api/users/signup",
                                 "/api/users/signin",
                                 "/graphiql",
-                                "/graphql"
+                                "/graphql",
+                                "/api/addresses/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
