@@ -1,7 +1,9 @@
 server:
-  port: 8080
-
+  port: 0
 spring:
+  application:
+    name: gastro-review
+
   datasource:
     url: jdbc:postgresql://localhost:5432/gastro_review
     username: luis
@@ -23,3 +25,12 @@ springdoc:
     path: /swagger-ui.html
     try-it-out-enabled: true
     display-request-duration: true
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
