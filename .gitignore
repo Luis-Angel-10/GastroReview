@@ -31,6 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
-# claves Azure
-src/main/resources/azure.properties
+
 
