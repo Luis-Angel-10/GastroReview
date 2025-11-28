@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import websiters.gastroreview.dto.ReviewCommentRequest;
 import websiters.gastroreview.dto.ReviewCommentResponse;
+import websiters.gastroreview.dto.ReviewCommentAnalysisResponse;
 import websiters.gastroreview.mapper.Mappers;
 import websiters.gastroreview.model.*;
 import websiters.gastroreview.repository.*;
@@ -22,6 +23,9 @@ public class ReviewCommentService {
     private final ReviewCommentRepository repo;
     private final ReviewRepository reviewRepo;
     private final UserRepository userRepo;
+
+    private final ReviewCommentAnalysisRepository analysisRepo;
+    private final TextAnalysisService textAnalysisService;
 
     @Transactional(readOnly = true)
     public Page<ReviewCommentResponse> list(Pageable pageable) {
@@ -73,6 +77,9 @@ public class ReviewCommentService {
         ReviewComment comment = Mappers.toReviewCommentEntity(in, author, review, parent);
         repo.save(comment);
 
+        ReviewCommentAnalysis analysis = textAnalysisService.analyze(comment);
+        analysisRepo.save(analysis);
+
         return Mappers.toResponse(comment);
     }
 
@@ -82,7 +89,8 @@ public class ReviewCommentService {
         ReviewComment comment = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 
-        if (in.getContent() != null) comment.setContent(in.getContent());
+        if (in.getContent() != null)
+            comment.setContent(in.getContent());
 
         repo.save(comment);
         return Mappers.toResponse(comment);
@@ -95,6 +103,18 @@ public class ReviewCommentService {
         }
         repo.deleteById(id);
     }
+
+    @Transactional(readOnly = true)
+    public ReviewCommentAnalysisResponse getAnalysis(UUID commentId) {
+
+        ReviewCommentAnalysis analysis = analysisRepo.findByComment_Id(commentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Analysis not found for this comment"));
+
+        return Mappers.toAnalysisResponse(analysis);
+    }
+
 
     private Page<ReviewCommentResponse> paginate(List<ReviewComment> list, Pageable pageable) {
         int size = 5;

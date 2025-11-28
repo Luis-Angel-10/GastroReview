@@ -449,6 +449,20 @@ public final class Mappers {
                 .build();
     }
 
+    public static ReviewCommentAnalysisResponse toAnalysisResponse(ReviewCommentAnalysis entity) {
+        if (entity == null) return null;
+
+        return ReviewCommentAnalysisResponse.builder()
+                .id(entity.getId())
+                .commentId(entity.getComment().getId())
+                .sentiment(entity.getSentiment())
+                .positiveScore(entity.getPositiveScore())
+                .neutralScore(entity.getNeutralScore())
+                .negativeScore(entity.getNegativeScore())
+                .keyPhrases(entity.getKeyPhrases())
+                .analyzedAt(entity.getAnalyzedAt())
+                .build();
+    }
 
 
 }

@@ -1,5 +1,6 @@
 package websiters.gastroreview.controller;
 
+import websiters.gastroreview.dto.ReviewCommentAnalysisResponse;
 import websiters.gastroreview.dto.ReviewCommentRequest;
 import websiters.gastroreview.dto.ReviewCommentResponse;
 import websiters.gastroreview.service.ReviewCommentService;
@@ -105,4 +106,20 @@ public class ReviewCommentController {
     public void delete(@PathVariable UUID id) {
         service.delete(id);
     }
+
+    @GetMapping("/{id}/analysis")
+    @Operation(
+            summary = "Get cognitive analysis of a comment",
+            description = "Retrieves sentiment, key phrases, and confidence scores for the given comment."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Analysis retrieved",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ReviewCommentAnalysisResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Comment or analysis not found")
+    })
+    public ReviewCommentAnalysisResponse getAnalysis(@PathVariable UUID id) {
+        return service.getAnalysis(id);
+    }
+
 }
