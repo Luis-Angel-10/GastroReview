@@ -29,7 +29,7 @@ class GastroReviewApplicationTests {
 		User user = userRepository.save(
 				User.builder()
 						.email("testuser@example.com")
-						.hashPassword("12345hash")
+						.password("12345hash")
 						.build()
 		);
 
