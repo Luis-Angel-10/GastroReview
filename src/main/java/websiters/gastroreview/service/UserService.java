@@ -80,7 +80,7 @@ public class UserService {
 
         User u = User.builder()
                 .email(normalizedEmail)
-                .Password(encodedPassword)
+                .password(encodedPassword)
                 .roles(Set.of(role))
                 .build();
 
