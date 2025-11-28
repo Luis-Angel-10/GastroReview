@@ -24,7 +24,7 @@ public class User {
 
     @NotBlank
     @Column(name = "password", nullable = false)
-    private String Password;
+    private String password;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
     @PrimaryKeyJoinColumn
