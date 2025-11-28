@@ -30,21 +30,48 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+
+                        // ---- PUBLIC ROUTES ----
                         .requestMatchers(
                                 "/auth/**",
                                 "/api/users/signup",
                                 "/api/users/signin",
                                 "/graphiql",
                                 "/graphql",
-                                "/api/addresses/**"
+                                "/api/addresses/**",
+                                "/api/alerts/**",
+                                "/api/dishes/**",
+                                "/api/favoriteRestaurants/**",
+                                "/api/favoriteRestaurantIds/**",
+                                "/api/favoriteReviews/**",
+                                "/api/favoriteReviewIds/**",
+                                "/api/friendships/**",
+                                "/api/friendshipIds/**",
+                                "/api/notifications/**",
+                                "/api/ratings/**",
+                                "/api/restaurantsAddresses/**",
+                                "/api/restaurantsAddressIds/**",
+                                "/api/restaurantCategories/**",
+                                "/api/restaurantImages/**",
+                                "/api/restaurantSchedules/**",
+                                "/api/reviewsAudios/**",
+                                "/api/reviewComments/**",
+                                "/api/reviewCommentAnalysis/**",
+                                "/api/reviewImages/**",
+                                "/api/usersAchievements/**",
+                                "/api/usersPreferences/**",
+                                "/api/usersProfiles/**",
+                                "/api/usersRoles/**",
+                                "/api/usersRoleIds/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).hasRole("ADMIN")
+
                         .requestMatchers("/api/restaurants/**").hasAnyRole("OWNER", "ADMIN")
-                        .requestMatchers("/api/reviews/**").hasAnyRole("USER", "ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)
