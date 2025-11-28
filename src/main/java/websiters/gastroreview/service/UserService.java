@@ -53,7 +53,9 @@ public class UserService {
 
     @Transactional
     public UserResponse create(UserRequest in) {
-        if (in == null || in.getEmail() == null || in.getEmail().isBlank() || in.getHash_password() == null || in.getHash_password().isBlank()) {
+
+        if (in == null || in.getEmail() == null || in.getEmail().isBlank()
+                || in.getPassword() == null || in.getPassword().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required fields");
         }
 
@@ -74,11 +76,11 @@ public class UserService {
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role not found: " + roleName)
                 );
 
-        String encodedPassword = passwordEncoder.encode(in.getHash_password());
+        String encodedPassword = passwordEncoder.encode(in.getPassword());
 
         User u = User.builder()
                 .email(normalizedEmail)
-                .hashPassword(encodedPassword)
+                .Password(encodedPassword)
                 .roles(Set.of(role))
                 .build();
 
@@ -98,8 +100,9 @@ public class UserService {
         if (in.getEmail() != null && !in.getEmail().isBlank()) {
             u.setEmail(in.getEmail().trim().toLowerCase());
         }
-        if (in.getHash_password() != null && !in.getHash_password().isBlank()) {
-            u.setHashPassword(passwordEncoder.encode(in.getHash_password()));
+
+        if (in.getPassword() != null && !in.getPassword().isBlank()) {
+            u.setPassword(passwordEncoder.encode(in.getPassword()));
         }
 
         try {
@@ -116,7 +119,7 @@ public class UserService {
         User user = repo.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        if (!passwordEncoder.matches(rawPassword, user.getHashPassword())) {
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 

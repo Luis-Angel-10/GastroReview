@@ -29,7 +29,7 @@ public class UserDetailsService implements org.springframework.security.core.use
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
-                .password(user.getHashPassword())
+                .password(user.getPassword())
                 .authorities(authorities)
                 .accountExpired(false)
                 .accountLocked(false)
