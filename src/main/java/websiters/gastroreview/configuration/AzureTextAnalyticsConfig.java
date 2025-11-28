@@ -11,10 +11,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AzureTextAnalyticsConfig {
 
-    @Value("${azure.text.endpoint}")
+    @Value("${azure.endpoint}")
     private String endpoint;
 
-    @Value("${azure.text.key}")
+    @Value("${azure.key}")
     private String key;
 
     @Bean
@@ -25,3 +25,4 @@ public class AzureTextAnalyticsConfig {
                 .buildClient();
     }
 }
+
