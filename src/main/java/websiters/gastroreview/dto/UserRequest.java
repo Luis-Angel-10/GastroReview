@@ -13,7 +13,7 @@ public class UserRequest{
 
         @Email
         @NotBlank String email;
-        @NotBlank String hash_password;
+        @NotBlank String password;
         @NotBlank String role;
 
 }

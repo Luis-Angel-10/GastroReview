@@ -23,7 +23,7 @@ public class User {
     private String email;
 
     @NotBlank
-    @Column(name = "hash_password", nullable = false)
+    @Column(name = "password", nullable = false)
     private String hashPassword;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)

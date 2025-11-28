@@ -30,8 +30,6 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
-                        // ---- PUBLIC ROUTES ----
                         .requestMatchers(
                                 "/auth/**",
                                 "/api/users/signup",
