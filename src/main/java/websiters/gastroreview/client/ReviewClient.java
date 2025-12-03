@@ -7,7 +7,10 @@ import websiters.gastroreview.dto.ReviewResponse;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name = "review", path = "/api/reviews")
+@FeignClient(
+        name = "review",
+        url = "${services.review.url}"
+)
 public interface ReviewClient {
 
     @GetMapping("/restaurant/{restaurantId}")
@@ -19,3 +22,4 @@ public interface ReviewClient {
     @GetMapping("/{id}")
     ReviewResponse getReview(@PathVariable UUID id);
 }
+
