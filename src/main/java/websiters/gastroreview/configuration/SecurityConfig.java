@@ -34,7 +34,8 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/api/users/signup",
                                 "/api/users/signin",
-                                "/gastroreview/users/**",
+                                "/api/users/**",
+                                "/api/restaurants/**",
                                 "/graphiql",
                                 "/graphql",
                                 "/api/addresses/**",
@@ -68,9 +69,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).hasRole("ADMIN")
-
                         .requestMatchers("/api/restaurants/**").hasAnyRole("OWNER", "ADMIN")
-
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)
