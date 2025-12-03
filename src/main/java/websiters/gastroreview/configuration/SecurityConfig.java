@@ -36,6 +36,7 @@ public class SecurityConfig {
                                 "/api/users/signin",
                                 "/api/users/**",
                                 "/api/restaurants/**",
+                                "/gastroreview/api/users/**",
                                 "/graphiql",
                                 "/graphql",
                                 "/api/addresses/**",
