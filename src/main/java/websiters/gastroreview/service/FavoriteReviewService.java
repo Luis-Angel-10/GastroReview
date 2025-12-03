@@ -1,18 +1,21 @@
 package websiters.gastroreview.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import websiters.gastroreview.client.ReviewClient;
 import websiters.gastroreview.dto.FavoriteReviewRequest;
 import websiters.gastroreview.dto.FavoriteReviewResponse;
 import websiters.gastroreview.mapper.Mappers;
-import websiters.gastroreview.model.*;
-import websiters.gastroreview.repository.*;
+import websiters.gastroreview.model.FavoriteReview;
+import websiters.gastroreview.model.FavoriteReviewId;
+import websiters.gastroreview.repository.FavoriteReviewRepository;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -20,32 +23,35 @@ import java.util.UUID;
 public class FavoriteReviewService {
 
     private final FavoriteReviewRepository repo;
-    private final UserRepository userRepo;
-    private final ReviewRepository reviewRepo;
+    private final ReviewClient reviewClient;
 
     @Transactional(readOnly = true)
     public Page<FavoriteReviewResponse> list(Pageable pageable) {
-        return repo.findAll(pageable).map(Mappers::toResponse);
+        Pageable fixed = Pageable.ofSize(5).withPage(pageable.getPageNumber());
+        return repo.findAll(fixed).map(Mappers::toResponse);
     }
 
     @Transactional(readOnly = true)
     public Page<FavoriteReviewResponse> findByUser(UUID userId, Pageable pageable) {
-        return repo.findByIdUserId(userId, pageable).map(Mappers::toResponse);
+        List<FavoriteReview> list = repo.findById_UserId(userId);
+        return paginate(list, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<FavoriteReviewResponse> findByReview(UUID reviewId, Pageable pageable) {
-        return repo.findByIdReviewId(reviewId, pageable).map(Mappers::toResponse);
+        List<FavoriteReview> list = repo.findById_ReviewId(reviewId);
+        return paginate(list, pageable);
     }
 
     @Transactional(readOnly = true)
     public FavoriteReviewResponse get(UUID userId, UUID reviewId) {
         FavoriteReviewId id = new FavoriteReviewId(userId, reviewId);
 
-        FavoriteReview fr = repo.findById(id).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Favorite review not found"));
+        FavoriteReview fav = repo.findById(id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Favorite not found"));
 
-        return Mappers.toResponse(fr);
+        return Mappers.toResponse(fav);
     }
 
     @Transactional
@@ -54,23 +60,22 @@ public class FavoriteReviewService {
         FavoriteReviewId id = new FavoriteReviewId(in.getUserId(), in.getReviewId());
 
         if (repo.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Already favorited");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Already marked as favorite");
         }
 
-        User user = userRepo.findById(in.getUserId()).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        // Verifica que el review exista en el MS Review
+        reviewClient.getReview(in.getReviewId());
 
-        Review review = reviewRepo.findById(in.getReviewId()).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
-
-        FavoriteReview fr = FavoriteReview.builder()
+        FavoriteReview fav = FavoriteReview.builder()
                 .id(id)
-                .user(user)
-                .review(review)
+                .userId(in.getUserId())
+                .reviewId(in.getReviewId())
+                .createdAt(OffsetDateTime.now())
                 .build();
 
-        fr = repo.save(fr);
-        return Mappers.toResponse(fr);
+        repo.save(fav);
+
+        return Mappers.toResponse(fav);
     }
 
     @Transactional
@@ -82,5 +87,19 @@ public class FavoriteReviewService {
         }
 
         repo.deleteById(id);
+    }
+
+    private Page<FavoriteReviewResponse> paginate(List<FavoriteReview> list, Pageable pageable) {
+        int size = 5;
+        int page = pageable.getPageNumber();
+        int start = page * size;
+        int end = Math.min(start + size, list.size());
+
+        List<FavoriteReviewResponse> content = list.subList(Math.min(start, end), end)
+                .stream()
+                .map(Mappers::toResponse)
+                .toList();
+
+        return new PageImpl<>(content, Pageable.ofSize(size).withPage(page), list.size());
     }
 }

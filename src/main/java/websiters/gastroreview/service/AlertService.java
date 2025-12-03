@@ -1,24 +1,20 @@
 package websiters.gastroreview.service;
 
-import websiters.gastroreview.dto.AlertRequest;
-import websiters.gastroreview.dto.AlertResponse;
-import websiters.gastroreview.mapper.Mappers;
-import websiters.gastroreview.model.Alert;
-import websiters.gastroreview.model.Restaurant;
-import websiters.gastroreview.model.Review;
-import websiters.gastroreview.repository.AlertRepository;
-import websiters.gastroreview.repository.RestaurantRepository;
-import websiters.gastroreview.repository.ReviewRepository;
-
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import websiters.gastroreview.client.ReviewClient;
+import websiters.gastroreview.dto.AlertRequest;
+import websiters.gastroreview.dto.AlertResponse;
+import websiters.gastroreview.mapper.Mappers;
+import websiters.gastroreview.model.Alert;
+import websiters.gastroreview.model.Restaurant;
+import websiters.gastroreview.repository.AlertRepository;
+import websiters.gastroreview.repository.RestaurantRepository;
 
 import java.util.UUID;
 
@@ -28,7 +24,7 @@ public class AlertService {
 
     private final AlertRepository repo;
     private final RestaurantRepository restaurantRepo;
-    private final ReviewRepository reviewRepo;
+    private final ReviewClient reviewClient;
 
     @Transactional(readOnly = true)
     public Page<AlertResponse> list(Pageable pageable) {
@@ -48,8 +44,9 @@ public class AlertService {
 
     @Transactional(readOnly = true)
     public Page<AlertResponse> findByReview(UUID reviewId, Pageable pageable) {
-
-        if (!reviewRepo.existsById(reviewId)) {
+        try {
+            reviewClient.getReviewsByRestaurant(reviewId);
+        } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found");
         }
 
@@ -69,10 +66,10 @@ public class AlertService {
     public AlertResponse create(AlertRequest in) {
 
         Alert alert = new Alert();
-
         alert.setType(in.getType());
         alert.setDetail(in.getDetail());
 
+        // Restaurant local
         if (in.getRestaurantId() != null) {
             Restaurant r = restaurantRepo.findById(in.getRestaurantId())
                     .orElseThrow(() ->
@@ -81,18 +78,15 @@ public class AlertService {
         }
 
         if (in.getReviewId() != null) {
-            Review review = reviewRepo.findById(in.getReviewId())
-                    .orElseThrow(() ->
-                            new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
-            alert.setReview(review);
+            try {
+                reviewClient.getReviewsByUser(in.getReviewId());
+            } catch (Exception ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Review not found in Review service");
+            }
         }
 
-        try {
-            alert = repo.save(alert);
-            return Mappers.toResponse(alert);
-        } catch (DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid alert data");
-        }
+        alert = repo.save(alert);
+        return Mappers.toResponse(alert);
     }
 
     @Transactional

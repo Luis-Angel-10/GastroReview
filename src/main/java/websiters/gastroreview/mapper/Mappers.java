@@ -3,9 +3,10 @@ package websiters.gastroreview.mapper;
 import websiters.gastroreview.dto.*;
 import websiters.gastroreview.model.*;
 
+import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.Collections;
 
 public final class Mappers {
 
@@ -19,9 +20,7 @@ public final class Mappers {
                 .email(entity.getEmail())
                 .roles(
                         entity.getRoles() != null
-                                ? entity.getRoles().stream()
-                                .map(Role::getName)
-                                .collect(Collectors.toSet())
+                                ? entity.getRoles().stream().map(Role::getName).collect(Collectors.toSet())
                                 : Collections.emptySet()
                 )
                 .build();
@@ -49,6 +48,7 @@ public final class Mappers {
                 .description(Optional.ofNullable(entity.getDescription()).orElse(""))
                 .build();
     }
+
 
     public static RestaurantResponse toResponse(Restaurant entity) {
         if (entity == null) return null;
@@ -90,6 +90,7 @@ public final class Mappers {
                 .build();
     }
 
+
     public static UserPreferenceResponse toResponse(UserPreference entity) {
         if (entity == null) return null;
 
@@ -121,6 +122,7 @@ public final class Mappers {
         );
     }
 
+
     public static FriendshipResponse toResponse(Friendship entity) {
         if (entity == null) return null;
 
@@ -131,6 +133,7 @@ public final class Mappers {
         );
     }
 
+
     public static RestaurantAddressResponse toResponse(RestaurantAddress entity) {
         if (entity == null) return null;
 
@@ -140,20 +143,6 @@ public final class Mappers {
                 entity.isPrimary(),
                 Optional.ofNullable(entity.getBranchName()).orElse("")
         );
-    }
-
-    public static DishResponse toResponse(Dish entity) {
-        if (entity == null) return null;
-
-        return DishResponse.builder()
-                .id(entity.getId())
-                .name(Optional.ofNullable(entity.getName()).orElse(""))
-                .description(Optional.ofNullable(entity.getDescription()).orElse(""))
-                .priceCents(entity.getPriceCents())
-                .available(entity.getAvailable())
-                .restaurantId(entity.getRestaurant() != null ? entity.getRestaurant().getId() : null)
-                .createdAt(entity.getCreatedAt())
-                .build();
     }
 
     public static RestaurantScheduleResponse toResponse(RestaurantSchedule entity) {
@@ -183,77 +172,29 @@ public final class Mappers {
                 .build();
     }
 
-    public static ReviewResponse toResponse(Review entity) {
+    public static DishResponse toResponse(Dish entity) {
         if (entity == null) return null;
 
-        return ReviewResponse.builder()
+        return DishResponse.builder()
                 .id(entity.getId())
-                .userId(entity.getAuthor() != null ? entity.getAuthor().getId() : null)
+                .name(entity.getName())
+                .description(entity.getDescription())
+                .priceCents(entity.getPriceCents())
+                .available(entity.getAvailable())
                 .restaurantId(entity.getRestaurant() != null ? entity.getRestaurant().getId() : null)
-                .dishId(entity.getDish() != null ? entity.getDish().getId() : null)
-                .title(Optional.ofNullable(entity.getTitle()).orElse(""))
-                .content(Optional.ofNullable(entity.getContent()).orElse(""))
-                .hasAudio(entity.isHasAudio())
-                .hasImage(entity.isHasImage())
-                .publishedAt(entity.getPublishedAt())
-                .build();
-    }
-
-
-
-    public static ReviewImageResponse toResponse(ReviewImage entity) {
-        if (entity == null) return null;
-
-        return ReviewImageResponse.builder()
-                .id(entity.getId())
-                .reviewId(entity.getReview() != null ? entity.getReview().getId() : null)
-                .url(Optional.ofNullable(entity.getUrl()).orElse(""))
-                .altText(Optional.ofNullable(entity.getAltText()).orElse(""))
-                .build();
-    }
-
-    public static ReviewAudioResponse toResponse(ReviewAudio entity) {
-        if (entity == null) return null;
-
-        return ReviewAudioResponse.builder()
-                .id(entity.getId())
-                .reviewId(entity.getReview() != null ? entity.getReview().getId() : null)
-                .url(Optional.ofNullable(entity.getUrl()).orElse(""))
-                .durationSeconds(entity.getDurationSeconds())
-                .transcription(Optional.ofNullable(entity.getTranscription()).orElse(""))
-                .build();
-    }
-
-    public static ReviewCommentResponse toResponse(ReviewComment entity) {
-        if (entity == null) return null;
-
-        return ReviewCommentResponse.builder()
-                .id(entity.getId())
-                .reviewId(entity.getReview() != null ? entity.getReview().getId() : null)
-                .authorId(entity.getAuthor() != null ? entity.getAuthor().getId() : null)
-                .parentId(entity.getParent() != null ? entity.getParent().getId() : null)
-                .content(Optional.ofNullable(entity.getContent()).orElse(""))
-                .publishedAt(entity.getPublishedAt())
-                .build();
-    }
-
-    public static FavoriteRestaurantResponse toResponse(FavoriteRestaurant entity) {
-        if (entity == null) return null;
-
-        return FavoriteRestaurantResponse.builder()
-                .userId(entity.getId().getUserId())
-                .restaurantId(entity.getId().getRestaurantId())
                 .createdAt(entity.getCreatedAt())
                 .build();
     }
 
-    public static FavoriteReviewResponse toResponse(FavoriteReview entity) {
-        if (entity == null) return null;
+    public static Dish toDishEntity(DishRequest dto, Restaurant restaurant) {
+        if (dto == null || restaurant == null) return null;
 
-        return FavoriteReviewResponse.builder()
-                .userId(entity.getId().getUserId())
-                .reviewId(entity.getId().getReviewId())
-                .createdAt(entity.getCreatedAt())
+        return Dish.builder()
+                .restaurant(restaurant)
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .priceCents(dto.getPriceCents())
+                .available(dto.getAvailable() != null ? dto.getAvailable() : true)
                 .build();
     }
 
@@ -264,11 +205,12 @@ public final class Mappers {
                 .id(entity.getId())
                 .type(Optional.ofNullable(entity.getType()).orElse(""))
                 .restaurantId(entity.getRestaurant() != null ? entity.getRestaurant().getId() : null)
-                .reviewId(entity.getReview() != null ? entity.getReview().getId() : null)
+                .reviewId(entity.getReviewId())
                 .detail(Optional.ofNullable(entity.getDetail()).orElse(""))
                 .createdAt(entity.getCreatedAt())
                 .build();
     }
+
 
     public static NotificationResponse toResponse(Notification entity) {
         if (entity == null) return null;
@@ -284,153 +226,56 @@ public final class Mappers {
                 .build();
     }
 
-    public static Dish toDishEntity(DishRequest dto, Restaurant restaurant) {
-        if (dto == null || restaurant == null) return null;
 
-        return Dish.builder()
-                .id(null) // se genera con @PrePersist
-                .restaurant(restaurant)
-                .name(dto.getName())
-                .description(dto.getDescription())
-                .priceCents(dto.getPriceCents())
-                .available(dto.getAvailable() != null ? dto.getAvailable() : true)
+    public static FavoriteRestaurantResponse toResponse(FavoriteRestaurant entity) {
+        if (entity == null) return null;
+
+        return FavoriteRestaurantResponse.builder()
+                .userId(entity.getUser() != null ? entity.getUser().getId() : null)
+                .restaurantId(entity.getRestaurant() != null ? entity.getRestaurant().getId() : null)
+                .createdAt(entity.getCreatedAt())
                 .build();
     }
 
-    public static RestaurantSchedule toRestaurantScheduleEntity(RestaurantScheduleRequest dto, Restaurant restaurant) {
-        if (dto == null || restaurant == null) return null;
-
-        return RestaurantSchedule.builder()
-                .id(null)
-                .restaurant(restaurant)
-                .weekday(dto.getWeekday())
-                .openTime(dto.getOpenTime())
-                .closeTime(dto.getCloseTime())
-                .special(dto.getSpecial() != null ? dto.getSpecial() : false)
-                .build();
-    }
-
-    public static Review toReviewEntity(ReviewRequest dto, User author, Restaurant restaurant, Dish dish) {
-        if (dto == null || author == null || restaurant == null) return null;
-
-        return Review.builder()
-                .id(null)
-                .author(author)
-                .restaurant(restaurant)
-                .dish(dish)
-                .title(dto.getTitle())
-                .content(dto.getContent())
-                .hasAudio(dto.getHasAudio() != null ? dto.getHasAudio() : false)
-                .hasImage(dto.getHasImage() != null ? dto.getHasImage() : false)
-                .build();
-    }
-
-    public static ReviewImage toReviewImageEntity(ReviewImageRequest dto, Review review) {
-        if (dto == null || review == null) return null;
-
-        return ReviewImage.builder()
-                .id(null)
-                .review(review)
-                .url(dto.getUrl())
-                .altText(dto.getAltText())
-                .build();
-    }
-
-    public static ReviewComment toReviewCommentEntity(
-            ReviewCommentRequest dto,
-            User author,
-            Review review,
-            ReviewComment parent
+    public static FavoriteRestaurant toFavoriteRestaurantEntity(
+            FavoriteRestaurantRequest dto,
+            User user,
+            Restaurant restaurant
     ) {
-        if (dto == null || author == null || review == null) return null;
-
-        return ReviewComment.builder()
-                .author(author)
-                .review(review)
-                .parent(parent)
-                .content(dto.getContent())
-                .build();
-    }
-
-
-    public static ReviewComment toReviewCommentEntity(ReviewCommentRequest dto, Review review, User author, ReviewComment parent) {
-        if (dto == null || review == null || author == null) return null;
-
-        return ReviewComment.builder()
-                .id(null)
-                .review(review)
-                .author(author)
-                .parent(parent)
-                .content(dto.getContent())
-                .build();
-    }
-
-    public static Alert toAlertEntity(AlertRequest dto, Restaurant restaurant, Review review) {
-        if (dto == null) return null;
-
-        return Alert.builder()
-                .id(null)
-                .type(dto.getType())
-                .restaurant(restaurant)
-                .review(review)
-                .detail(dto.getDetail())
-                .build();
-    }
-
-    public static Notification toNotificationEntity(NotificationRequest dto, User user) {
-        if (dto == null || user == null) return null;
-
-        return Notification.builder()
-                .id(null)
-                .user(user)
-                .type(dto.getType())
-                .message(dto.getMessage())
-                .read(false)
-                .referenceId(dto.getReferenceId())
-                .metadata(dto.getMetadata())
-                .build();
-    }
-
-    public static FavoriteRestaurant toFavoriteRestaurantEntity(FavoriteRestaurantRequest dto, User user, Restaurant restaurant) {
-        if (dto == null || user == null || restaurant == null) return null;
-
         return FavoriteRestaurant.builder()
-                .id(new FavoriteRestaurantId(user.getId(), restaurant.getId()))
+                .id(new FavoriteRestaurantId(dto.getUserId(), dto.getRestaurantId()))
                 .user(user)
                 .restaurant(restaurant)
+                .createdAt(OffsetDateTime.now())
                 .build();
     }
 
-    public static RestaurantImage toRestaurantImageEntity(RestaurantImageRequest dto, Restaurant restaurant, User uploader) {
-        if (dto == null || restaurant == null) return null;
 
-        return RestaurantImage.builder()
-                .id(null)
-                .restaurant(restaurant)
-                .url(dto.getUrl())
-                .altText(dto.getAltText())
-                .uploadedBy(uploader)
+    public static FavoriteReviewResponse toResponse(FavoriteReview entity) {
+        if (entity == null) return null;
+
+        return FavoriteReviewResponse.builder()
+                .userId(entity.getUserId())
+                .reviewId(entity.getReviewId())
+                .createdAt(entity.getCreatedAt())
                 .build();
     }
 
-    public static Rating toRatingEntity(RatingRequest dto, User user, Review review) {
-        if (dto == null || user == null || review == null) return null;
-
-        return Rating.builder()
-                .user(user)
-                .review(review)
-                .stars(dto.getStars())
-                .points(dto.getPoints() != null ? dto.getPoints() : 0)
+    public static FavoriteReview toFavoriteReviewEntity(FavoriteReviewRequest dto) {
+        return FavoriteReview.builder()
+                .id(new FavoriteReviewId(dto.getUserId(), dto.getReviewId()))
+                .userId(dto.getUserId())
+                .reviewId(dto.getReviewId())
+                .createdAt(OffsetDateTime.now())
                 .build();
     }
-
 
     public static RatingResponse toResponse(Rating entity) {
         if (entity == null) return null;
 
         return RatingResponse.builder()
                 .id(entity.getId())
-                .reviewId(entity.getReview() != null ? entity.getReview().getId() : null)
+                .reviewId(entity.getReviewId())
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
                 .stars(entity.getStars())
                 .points(entity.getPoints())
@@ -438,29 +283,33 @@ public final class Mappers {
                 .build();
     }
 
-    public static ReviewAudio toReviewAudioEntity(ReviewAudioRequest dto, Review review) {
-        if (dto == null || review == null) return null;
+    public static RestaurantImage toRestaurantImageEntity(
+            RestaurantImageRequest dto,
+            Restaurant restaurant,
+            User uploader
+    ) {
+        if (dto == null || restaurant == null) return null;
 
-        return ReviewAudio.builder()
-                .review(review)
+        return RestaurantImage.builder()
+                .restaurant(restaurant)
                 .url(dto.getUrl())
-                .durationSeconds(dto.getDurationSeconds())
-                .transcription(dto.getTranscription())
+                .altText(dto.getAltText())
+                .uploadedBy(uploader)
                 .build();
     }
 
-    public static ReviewCommentAnalysisResponse toAnalysisResponse(ReviewCommentAnalysis entity) {
-        if (entity == null) return null;
+    public static RestaurantSchedule toRestaurantScheduleEntity(
+            RestaurantScheduleRequest dto,
+            Restaurant restaurant
+    ) {
+        if (dto == null || restaurant == null) return null;
 
-        return ReviewCommentAnalysisResponse.builder()
-                .id(entity.getId())
-                .commentId(entity.getComment().getId())
-                .sentiment(entity.getSentiment())
-                .positiveScore(entity.getPositiveScore())
-                .neutralScore(entity.getNeutralScore())
-                .negativeScore(entity.getNegativeScore())
-                .keyPhrases(entity.getKeyPhrases())
-                .analyzedAt(entity.getAnalyzedAt())
+        return RestaurantSchedule.builder()
+                .restaurant(restaurant)
+                .weekday(dto.getWeekday())
+                .openTime(dto.getOpenTime())
+                .closeTime(dto.getCloseTime())
+                .special(dto.getSpecial() != null ? dto.getSpecial() : false)
                 .build();
     }
 

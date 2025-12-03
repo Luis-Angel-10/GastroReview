@@ -6,14 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import websiters.gastroreview.client.ReviewClient;
 import websiters.gastroreview.dto.RatingRequest;
 import websiters.gastroreview.dto.RatingResponse;
 import websiters.gastroreview.mapper.Mappers;
 import websiters.gastroreview.model.Rating;
-import websiters.gastroreview.model.Review;
 import websiters.gastroreview.model.User;
 import websiters.gastroreview.repository.RatingRepository;
-import websiters.gastroreview.repository.ReviewRepository;
 import websiters.gastroreview.repository.UserRepository;
 
 import java.util.List;
@@ -24,7 +23,7 @@ import java.util.UUID;
 public class RatingService {
 
     private final RatingRepository repo;
-    private final ReviewRepository reviewRepo;
+    private final ReviewClient reviewClient;
     private final UserRepository userRepo;
 
     @Transactional(readOnly = true)
@@ -35,7 +34,7 @@ public class RatingService {
 
     @Transactional(readOnly = true)
     public Page<RatingResponse> findByReview(UUID reviewId, Pageable pageable) {
-        List<Rating> list = repo.findByReview_Id(reviewId);
+        List<Rating> list = repo.findByReviewId(reviewId);
         return paginate(list, pageable);
     }
 
@@ -60,13 +59,22 @@ public class RatingService {
     @Transactional
     public RatingResponse create(RatingRequest in) {
 
-        Review review = reviewRepo.findById(in.getReviewId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Review does not exist"));
+        try {
+            reviewClient.getReview(in.getReviewId());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Review does not exist");
+        }
 
         User user = userRepo.findById(in.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User does not exist"));
 
-        Rating rating = Mappers.toRatingEntity(in, user, review);
+        Rating rating = Rating.builder()
+                .reviewId(in.getReviewId())
+                .user(user)
+                .stars(in.getStars())
+                .points(in.getPoints())
+                .build();
+
         repo.save(rating);
 
         return Mappers.toResponse(rating);

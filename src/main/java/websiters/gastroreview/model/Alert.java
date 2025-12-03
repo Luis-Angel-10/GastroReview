@@ -17,15 +17,14 @@ public class Alert {
     private UUID id;
 
     @Column(nullable = false)
-    private String type; // negative_review, spam, trending, fraud, other
+    private String type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
-    private Review review;
+    @Column(name = "review_id")
+    private UUID reviewId;
 
     private String detail;
 
@@ -33,3 +32,4 @@ public class Alert {
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 }
+
